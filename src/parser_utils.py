@@ -75,6 +75,7 @@ def get_args():
 
     return args
 
+
 def get_sindy_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", help="Path to a configuration file")
@@ -125,6 +126,7 @@ def get_sindy_args():
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
 
     return args
+
 
 def parse_config(file_path):
     with open(file_path, 'r') as f:

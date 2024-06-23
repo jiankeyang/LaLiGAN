@@ -4,7 +4,7 @@ import argparse
 
 def triangle(n, w):
     x1 = np.linspace(start=0, stop=1, num=w // 2, endpoint=False)
-    x2 = np.linspace(start=1, stop=0, num=w - w // 2, endpoint=False)    
+    x2 = np.linspace(start=1, stop=0, num=w - w // 2, endpoint=False)
     x = np.concatenate([x1, x2, np.zeros(n - w)])
     assert len(x) == n
     return x
@@ -35,6 +35,7 @@ def random_cyclic_shift(x):
     d = np.random.randint(n)
     x = cyclic_shift(x, d)
     return x, d / n
+
 
 def get_double_bump_data(n_samples, signal_len=64, bump_len=16, fix_d1=-1, fix_d2=-1):
     x_list = np.empty((n_samples, signal_len))

@@ -2,24 +2,22 @@
 # https://proceedings.neurips.cc/paper_files/paper/2022/hash/dcd297696d0bb304ba426b3c5a679c37-Abstract-Conference.html
 import numpy as np
 from PIL import Image
-from scipy.stats import special_ortho_group
-from scipy.linalg import logm, expm
-import torch
-from torch.utils.data import Dataset, DataLoader
 
 import matplotlib.pyplot as plt
 import io
 import matplotlib
 matplotlib.use('agg')
 
+
 def read_off(filename):
     with open(filename, 'r') as file:
-        if 'OFF' != file.readline().strip():
-            raise('Not a valid OFF header')
+        # if 'OFF' != file.readline().strip():
+        #     raise('Not a valid OFF header')
         n_verts, n_faces, n_dontknow = tuple([int(s) for s in file.readline().strip().split(' ')])
         verts = [[float(s) for s in file.readline().strip().split(' ')] for i_vert in range(n_verts)]
         faces = [[int(s) for s in file.readline().strip().split(' ')][1:] for i_face in range(n_faces)]
     return verts, faces
+
 
 def render(vertices, triangles, R, lim=0.95):
     vertices = (R @ vertices.T).T
@@ -49,7 +47,7 @@ def render(vertices, triangles, R, lim=0.95):
         io_buf.seek(0)
         images.append(
             np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-            newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
+                       newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
         )
     # -------------------------------------------------------
 
@@ -60,7 +58,7 @@ def render(vertices, triangles, R, lim=0.95):
         io_buf.seek(0)
         images.append(
             np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-            newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
+                       newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
         )
     # -------------------------------------------------------
 
@@ -71,7 +69,7 @@ def render(vertices, triangles, R, lim=0.95):
         io_buf.seek(0)
         images.append(
             np.reshape(np.frombuffer(io_buf.getvalue(), dtype=np.uint8),
-            newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
+                       newshape=(int(fig.bbox.bounds[3]), int(fig.bbox.bounds[2]), -1))
         )
     # -------------------------------------------------------
 

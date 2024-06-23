@@ -1,11 +1,9 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
-import scipy
 from dataset import *
 
-cos_corr = lambda x,y: torch.trace(x.T @ y) / torch.norm(x) / torch.norm(y)
+cos_corr = lambda x, y: torch.trace(x.T @ y) / torch.norm(x) / torch.norm(y)
+
 
 # scale the tensor to have dummy position equal to 1
 def affine_coord(tensor, dummy_pos=None):
@@ -14,17 +12,19 @@ def affine_coord(tensor, dummy_pos=None):
         return tensor / tensor[..., dummy_pos].unsqueeze(-1)
     else:
         return tensor
-    
+
+
 # so(n) Lie algebra
 def so(n):
     L = np.zeros((n*(n-1)//2, n, n))
     k = 0
     for i in range(n):
         for j in range(i):
-            L[k,i,j] = 1
-            L[k,j,i] = -1
+            L[k, i, j] = 1
+            L[k, j, i] = -1
             k += 1
     return torch.tensor(L, dtype=torch.float32)
+
 
 def get_dataset(args):
     if args['task'] == 'rd':

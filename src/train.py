@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
-from tqdm import tqdm, trange
 import os
+
+save_model_path = '../saved_models'
 
 
 def train_lassi(
@@ -107,7 +107,7 @@ def train_lassi(
                     loss = loss + w_sindy_reg * loss_sindy_reg
                 else:
                     raise ValueError(f'Unknown regularization type: {reg_type}')
-                
+
             # Backprop
             if not no_ae_flag:
                 optimizer_ae.zero_grad()
@@ -170,26 +170,26 @@ def train_lassi(
                         loss_sindy_x = sindy_loss(dx_pred, dx)
                         running_losses[5].append(loss_sindy_z.item())
                         running_losses[6].append(loss_sindy_x.item())
-                    
+
                 print(f'Epoch {epoch} test, loss_ae: {np.mean(running_losses[0]):.4f}, loss_g: {np.mean(running_losses[1]):.4f}, loss_d_real: {np.mean(running_losses[2]):.4f}, loss_d_fake: {np.mean(running_losses[3]):.4f}, loss_ae_rel: {np.mean(running_losses[4]):.4f}, loss_sindy_z: {np.mean(running_losses[5]):.4f}, loss_sindy_x: {np.mean(running_losses[6]):.4f}')
                 if kwargs['print_li']:
                     print(generator.getLi())
                 if include_sindy:
                     regressor.print()
-        
+
         if (epoch + 1) % save_interval == 0:
-            if not os.path.exists(f'saved_models/{save_dir}'):
-                os.makedirs(f'saved_models/{save_dir}')
-            torch.save(autoencoder.state_dict(), f'saved_models/{save_dir}/autoencoder_{epoch}.pt')
-            torch.save(discriminator.state_dict(), f'saved_models/{save_dir}/discriminator_{epoch}.pt')
-            torch.save(generator.state_dict(), f'saved_models/{save_dir}/generator_{epoch}.pt')
+            if not os.path.exists(f'{save_model_path}/{save_dir}'):
+                os.makedirs(f'{save_model_path}/{save_dir}')
+            torch.save(autoencoder.state_dict(), f'{save_model_path}/{save_dir}/autoencoder_{epoch}.pt')
+            torch.save(discriminator.state_dict(), f'{save_model_path}/{save_dir}/discriminator_{epoch}.pt')
+            torch.save(generator.state_dict(), f'{save_model_path}/{save_dir}/generator_{epoch}.pt')
             if include_sindy:
-                torch.save(regressor.state_dict(), f'saved_models/{save_dir}/regressor_{epoch}.pt')
+                torch.save(regressor.state_dict(), f'{save_model_path}/{save_dir}/regressor_{epoch}.pt')
 
 
 def train_SINDy(
         autoencoder, regressor, train_loader, test_loader,
-        num_epochs, lr, reg_type, w_reg, seq_thres_freq, threshold, rel_loss, 
+        num_epochs, lr, reg_type, w_reg, seq_thres_freq, threshold, rel_loss,
         device, log_interval, save_interval, save_dir, **kwargs
 ):
     # Initialize optimizers
@@ -212,8 +212,8 @@ def train_SINDy(
                 running_losses[0].append(loss_reg.item())
             else:
                 raise ValueError(f'Unknown regularization type: {reg_type}')
-            loss = w_reg * loss_reg       
-            
+            loss = w_reg * loss_reg
+
             # Reconstruction loss
             z, xhat = autoencoder(x)
             loss_recon = recon_loss(xhat, x)
@@ -225,7 +225,7 @@ def train_SINDy(
             if rel_loss:
                 # Denominator at least 0.1
                 denom = torch.max(sindy_loss(dz, torch.zeros_like(dz, device=device)),
-                                    torch.ones_like(loss, device=device) * 0.1)
+                                  torch.ones_like(loss, device=device) * 0.1)
                 loss_sindy_z = sindy_loss(dz_pred, dz) / denom
             else:
                 loss_sindy_z = sindy_loss(dz_pred, dz)
@@ -238,7 +238,6 @@ def train_SINDy(
             optimizer_sindy.zero_grad()
             loss.backward()
             optimizer_sindy.step()
-
 
         # Sequential thresholding
         if seq_thres_freq > 0 and (epoch + 1) % seq_thres_freq == 0:
@@ -274,7 +273,7 @@ def train_SINDy(
                         running_losses[0].append(loss_reg.item())
                     else:
                         raise ValueError(f'Unknown regularization type: {reg_type}')
-                    
+
                 print(f'Epoch {epoch} test, loss_reg: {np.mean(running_losses[0]):.4f}, '
                       f'loss_recon: {np.mean(running_losses[1]):.4f}, '
                       f'loss_sindy_z: {np.mean(running_losses[2]):.4f}, '
@@ -282,8 +281,6 @@ def train_SINDy(
                 regressor.print()
 
         if (epoch + 1) % save_interval == 0:
-            if not os.path.exists(f'saved_models/{save_dir}'):
-                os.makedirs(f'saved_models/{save_dir}')
-            torch.save(regressor.state_dict(), f'saved_models/{save_dir}/regressor_{epoch}.pt')
-
-
+            if not os.path.exists(f'{save_model_path}/{save_dir}'):
+                os.makedirs(f'{save_model_path}/{save_dir}')
+            torch.save(regressor.state_dict(), f'{save_model_path}/{save_dir}/regressor_{epoch}.pt')

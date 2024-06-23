@@ -1,14 +1,9 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
-import argparse
 from torch.utils.data import DataLoader
-from gan import *
-from autoencoder import *
-from train import *
-from dataset import *
-from sindy import *
+from autoencoder import AutoEncoder
+from sindy import SINDyRegression
+from train import train_SINDy
 from parser_utils import get_sindy_args
 from utils import get_dataset
 
@@ -26,7 +21,7 @@ if __name__ == '__main__':
     train_dataset, val_dataset, args = get_dataset(args)
     train_loader = DataLoader(train_dataset, batch_size=args['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=args['batch_size'], shuffle=False)
-    
+
     # Initialize model
     if args['load_ae']:
         autoencoder = AutoEncoder(**args).to(args['device'])
@@ -41,6 +36,6 @@ if __name__ == '__main__':
     else:
         args['L_list'] = []
     regressor = SINDyRegression(**args).to(args['device'])
-    
+
     # Train regressor
     train_SINDy(autoencoder, regressor, train_loader, val_loader, **args)

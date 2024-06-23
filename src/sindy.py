@@ -1,29 +1,36 @@
 import torch
 import torch.nn as nn
-import numpy as np
 import sympy as sp
+
 
 def SINDyConst(x):
     return torch.ones(*x.shape[:-1], 1, device=x.device)
 
+
 def SINDyPoly1(x):
     return x
 
+
 def SINDyPoly2(x):
-    return torch.cat([(x[..., i] * x[..., j]).view(*x.shape[:-1], 1) 
-                       for i in range(x.shape[-1]) 
-                       for j in range(i, x.shape[-1])], 
-                       dim = -1)
+    return torch.cat([
+        (x[..., i] * x[..., j]).view(*x.shape[:-1], 1)
+        for i in range(x.shape[-1])
+        for j in range(i, x.shape[-1])],
+        dim=-1)
+
 
 def SINDyPoly3(x):
-    return torch.cat([(x[..., i] * x[..., j] * x[..., k]).view(*x.shape[:-1], 1) 
-                       for i in range(x.shape[-1]) 
-                       for j in range(i, x.shape[-1])
-                       for k in range(j, x.shape[-1])], 
-                       dim = -1)
+    return torch.cat([
+        (x[..., i] * x[..., j] * x[..., k]).view(*x.shape[:-1], 1)
+        for i in range(x.shape[-1])
+        for j in range(i, x.shape[-1])
+        for k in range(j, x.shape[-1])],
+        dim=-1)
+
 
 def SINDySine(x):
     return torch.sin(x)
+
 
 def SINDyExp(x):
     return torch.exp(x)
@@ -44,7 +51,7 @@ class SINDyRegression(nn.Module):
         self.poly_order = poly_order
         self.include_sine = include_sine
         self.include_exp = include_exp
-        self.constraint = (len(L_list)!=0)
+        self.constraint = (len(L_list) != 0)
         self.L_list = L_list
         self.terms = []
         self.threshold = kwargs["threshold"]
@@ -76,7 +83,7 @@ class SINDyRegression(nn.Module):
         self.Xi = self.get_Xi() if self.constraint else self.Xi
         x = torch.cat([module(x) for module in self.terms], dim=-1)
         return x @ (self.Xi * self.mask).T
-    
+
     # Calculate Q, whose column space forms the null space of C
     def get_Q(self):
         M_list = self.get_M_list()
@@ -93,13 +100,13 @@ class SINDyRegression(nn.Module):
                 break
         # Extract Q
         Q = V[:, -r:]
-        
+
         # Print constraint information
         # print(f'M_list={M_list}')
         # print(f'C_total={C_total}')
         # print(f'Q={Q}')
         # print(f'Sigma={Sigma}')
-        
+
         return Q
 
     # Calculate symbolic map M
@@ -125,11 +132,11 @@ class SINDyRegression(nn.Module):
                     # Extract coeff, using subs(z=0) to avoid bug in coeff()
                     M_list[i][j, k] = float(expression.coeff(Theta[k]).subs({zi: 0 for zi in z}))
         return M_list
-    
+
     # Calculate function basis library \Theta
     def get_Theta(self):
         # Create variables z_0~z_n-1
-        z = [sp.symbols(f"z{i}") for i in range(self.latent_dim)]
+        _ = [sp.symbols(f"z{i}") for i in range(self.latent_dim)]
         # Poly0
         Theta = sp.Matrix([1])
         # Poly1
@@ -147,12 +154,12 @@ class SINDyRegression(nn.Module):
                     for k in range(self.latent_dim):
                         Theta = sp.Matrix.vstack(Theta, sp.Matrix([f"z{i}*z{j}*z{k}"]))
         return Theta
-    
+
     # Convert bata and const to Xi matrix
     def get_Xi(self):
         Xi = (self.Q @ self.beta).view(self.latent_dim, -1)
         Xi += torch.cat([self.const, torch.zeros((Xi.shape[0], Xi.shape[1]-1), device=Xi.device)], dim=1)
-        return Xi                   
+        return Xi
 
     # Get the total number of function basis
     def get_term_num(self):
@@ -171,7 +178,7 @@ class SINDyRegression(nn.Module):
     def set_threshold(self, threshold):
         self.Xi = self.get_Xi() if self.constraint else self.Xi
         self.mask.data = torch.logical_and(torch.abs(self.Xi) > threshold, self.mask).float()
-    
+
     # Print equations
     def print(self):
         Xi = self.get_Xi() if self.constraint else self.Xi
@@ -199,7 +206,7 @@ class SINDyRegression(nn.Module):
                 for j in range(self.latent_dim):
                     for k in range(j, self.latent_dim):
                         for l in range(k, self.latent_dim):
-                            if self.mask[i ,pos]:
+                            if self.mask[i, pos]:
                                 equation += f' {Xi[i, pos]:.3f}*z{j}*z{k}*z{l} +'
                             pos += 1
             # Sin terms
@@ -215,4 +222,3 @@ class SINDyRegression(nn.Module):
                         equation += f' {Xi[i, pos]:.3f}*exp(z{j}) +'
                     pos += 1
             print(equation)
-                

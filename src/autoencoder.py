@@ -1,9 +1,6 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.autograd.functional import jvp
 from torch.nn.utils.parametrizations import orthogonal
-import numpy as np
 
 
 class Reshape(nn.Module):
@@ -154,12 +151,11 @@ class AutoEncoder(nn.Module):
 
     def decode(self, z):
         return self.decoder(z)
-    
+
     def compute_dz(self, x, dx):
         dz = jvp(self.encoder, x, v=dx)[1]
         return dz
-    
+
     def compute_dx(self, z, dz):
         dx = jvp(self.decoder, z, v=dz)[1]
         return dx
-    

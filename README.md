@@ -1,20 +1,38 @@
 # Latent Space Symmetry Discovery (LaLiGAN)
+
 Code for our ICML 2024 paper, [Latent Space Symmetry Discovery](https://arxiv.org/pdf/2310.00105).
 
-![image](figure.png)
+![LaLiGAN](figure.png)
 
-## Setup datasets
+## Setup the Environment
+
+```
+conda create -n laligan python=3.9
+conda deactivate
+conda activate laligan
+
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip3 install scipy==1.10.1
+pip3 install tqdm==4.64.1
+
+cd src
+```
+
+## Setup Datasets
 
 ### Reaction-Diffusion System
 The system is simulated with the Matlab scripts provided in [SINDy Autoencoders](https://github.com/kpchamp/SindyAutoencoders/tree/master/rd_solver).
 
 Running the script `reaction_diffusion.m` should produce the data file `reaction_diffusion.mat`. Then, place it under `./data` in this repository.
 
+Alternatively, download the data from [this link](https://drive.google.com/file/d/1N-oV4wGCBo6TxUX8VuUhWiAlVvuUokaj/view?usp=sharing).
+
 ### Rotating Object
 Generate the renderings of a bookshelf with different orientations:
 ```
 python data_utils/rot_obj.py --num_samples 10000 --name train
-python data_utils/rot_obj.py --num_samples 1000 --name test
+python data_utils/rot_obj.py --num_samples 100 --name val
+python data_utils/rot_obj.py --num_samples 100 --name test
 ```
 
 ## Experiments
@@ -99,10 +117,11 @@ python main.py --config config/rs.cfg
 
 ## Cite
 ```
-@article{yang2023latent,
+@article{yang2024latent,
   title={Latent Space Symmetry Discovery},
   author={Yang, Jianke and Dehmamy, Nima and Walters, Robin and Yu, Rose},
-  journal={arXiv preprint arXiv:2310.00105},
-  year={2023}
+  booktitle={International Conference on Machine Learning, {ICML} 2024},
+  series={Proceedings of Machine Learning Research},
+  year={2024}
 }
 ```

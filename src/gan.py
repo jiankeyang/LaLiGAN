@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
 from utils import so
 
 
@@ -10,7 +9,7 @@ class IntParameter(nn.Module):
         super(IntParameter, self).__init__()
         self.noise = noise
         self.k = k
-    
+
     def forward(self, data):
         noise = torch.randn_like(data) * self.noise
         return torch.round(torch.clamp(self.k * (data + noise), -self.k - 0.49, self.k + 0.49))
@@ -136,7 +135,7 @@ class LieGenerator(nn.Module):
             Li_N = Li / (torch.sqrt(norm).unsqueeze(-1).unsqueeze(-1) + 1e-6)
             s += torch.sum(torch.abs(torch.triu(torch.einsum('bij,cij->bc', Li_N, Li_N), diagonal=1)))
         return s
-    
+
     def forward(self, x):  # random transformation on x
         # x: (batch_size, *, n_dims)
         # normalize x to have zero mean
@@ -164,7 +163,7 @@ class LieGenerator(nn.Module):
             max_chval = torch.amax(torch.abs(Li), dim=(1, 2), keepdim=True)
             # mask.data = torch.logical_and(torch.abs(Li) > threshold * max_chval, mask).float()
             mask.data = (torch.abs(Li) > threshold * max_chval).float()
-    
+
     def sample_group_element(self, batch_size, device):
         start_dim = 0
         g = []
@@ -200,7 +199,7 @@ class LieGenerator(nn.Module):
             mask[:, ch] = 1
             z = z * mask
         return z
-    
+
     def transform(self, g_z, x, tp):
         return torch.einsum('bjk,bk->bj', g_z, x)
         # if tp == 'vector':
@@ -236,7 +235,6 @@ class Discriminator(nn.Module):
             nn.Linear(hidden_dim, 1),
             nn.Sigmoid(),
         )
-
 
     def forward(self, z, y=None, x=None):
         # z: latent representation; y: invariant label; x: original input

@@ -1,13 +1,10 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
-import argparse
 from torch.utils.data import DataLoader
-from gan import *
-from autoencoder import *
-from sindy import *
-from train import *
+from gan import Discriminator, LieGenerator
+from autoencoder import AutoEncoder
+from sindy import SINDyRegression
+from train import train_lassi
 from utils import get_dataset
 from parser_utils import get_args
 
@@ -35,7 +32,6 @@ if __name__ == '__main__':
 
     # Train model
     train_lassi(autoencoder, discriminator, generator, train_loader, val_loader, **args)
-    
     # Save final model
     torch.save(autoencoder.state_dict(), f'saved_models/{args["save_dir"]}/autoencoder.pt')
     torch.save(generator.getLi(), f'saved_models/{args["save_dir"]}/Lie_list.pt')
