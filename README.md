@@ -2,6 +2,8 @@
 
 Code for our ICML 2024 paper, [Latent Space Symmetry Discovery](https://arxiv.org/pdf/2310.00105).
 
+This repository will be deprecated. Please refer to [https://github.com/Rose-STL-Lab/LaLiGAN](https://github.com/Rose-STL-Lab/LaLiGAN) for future updates.
+
 ![LaLiGAN](figure.png)
 
 ## Setup the Environment
